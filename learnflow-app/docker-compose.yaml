@@ -1,0 +1,147 @@
+version: "3.9"
+
+services:
+  # --- Infrastructure ---
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: learnflow
+      POSTGRES_PASSWORD: learnflow-secret-2026
+      POSTGRES_DB: learnflow
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/migrations/V002_seed_modules.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learnflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports: ["2181:2181"]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on: [zookeeper]
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic learning.submitted --partitions 3 --replication-factor 1 &&
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic code.executed --partitions 3 --replication-factor 1 &&
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic exercise.started --partitions 3 --replication-factor 1 &&
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic struggle.detected --partitions 3 --replication-factor 1 &&
+      echo 'All 4 topics created'
+      "
+
+  # --- Agents ---
+  triage-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: triage_agent, AGENT_PORT: "8000" }
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+      KAFKA_BOOTSTRAP: kafka:9092
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  concepts-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: concepts_agent, AGENT_PORT: "8001" }
+    ports: ["8001:8001"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+
+  code-review-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: code_review_agent, AGENT_PORT: "8002" }
+    ports: ["8002:8002"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+
+  debug-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: debug_agent, AGENT_PORT: "8003" }
+    ports: ["8003:8003"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+
+  exercise-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: exercise_agent, AGENT_PORT: "8004" }
+    ports: ["8004:8004"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+      KAFKA_BOOTSTRAP: kafka:9092
+
+  progress-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args: { AGENT_MODULE: progress_agent, AGENT_PORT: "8005" }
+    ports: ["8005:8005"]
+    environment:
+      DATABASE_URL: postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow
+      KAFKA_BOOTSTRAP: kafka:9092
+
+  # --- Code Sandbox ---
+  code-sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.sandbox
+    ports: ["8010:8010"]
+    environment:
+      SANDBOX_TIMEOUT: "5"
+      SANDBOX_MEMORY_MB: "50"
+    read_only: true
+    tmpfs:
+      - /tmp:size=50M
+
+  # --- Frontend ---
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports: ["3000:3000"]
+    environment:
+      API_BASE_URL: http://triage-agent:8000
+      SANDBOX_URL: http://code-sandbox:8010
+    depends_on:
+      - triage-agent
+      - code-sandbox
+
+volumes:
+  pgdata:

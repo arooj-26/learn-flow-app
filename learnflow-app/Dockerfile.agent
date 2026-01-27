@@ -1,0 +1,18 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ ./src/
+
+# Each agent is run with different AGENT_NAME env var
+# e.g., AGENT_NAME=triage_agent, MODULE_PATH=src.api.agents.triage_agent.main:app
+ARG AGENT_MODULE=triage_agent
+ARG AGENT_PORT=8000
+ENV AGENT_PORT=${AGENT_PORT}
+
+EXPOSE ${AGENT_PORT}
+
+CMD ["sh", "-c", "uvicorn src.api.agents.${AGENT_MODULE}.main:app --host 0.0.0.0 --port ${AGENT_PORT}"]

@@ -1,0 +1,316 @@
+---
+# === TRIAGE AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage-agent
+  namespace: learnflow
+  labels:
+    app: triage-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: triage-agent
+  template:
+    metadata:
+      labels:
+        app: triage-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "triage-agent"
+        dapr.io/app-port: "8000"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: triage-agent
+          image: learnflow/triage-agent:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: triage-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: triage-agent
+  ports:
+    - port: 80
+      targetPort: 8000
+---
+# === CONCEPTS AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: concepts-agent
+  namespace: learnflow
+  labels:
+    app: concepts-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: concepts-agent
+  template:
+    metadata:
+      labels:
+        app: concepts-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "concepts-agent"
+        dapr.io/app-port: "8001"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: concepts-agent
+          image: learnflow/concepts-agent:latest
+          ports:
+            - containerPort: 8001
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8001 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: concepts-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: concepts-agent
+  ports:
+    - port: 80
+      targetPort: 8001
+---
+# === CODE REVIEW AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-review-agent
+  namespace: learnflow
+  labels:
+    app: code-review-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: code-review-agent
+  template:
+    metadata:
+      labels:
+        app: code-review-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "code-review-agent"
+        dapr.io/app-port: "8002"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: code-review-agent
+          image: learnflow/code-review-agent:latest
+          ports:
+            - containerPort: 8002
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8002 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-review-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: code-review-agent
+  ports:
+    - port: 80
+      targetPort: 8002
+---
+# === DEBUG AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debug-agent
+  namespace: learnflow
+  labels:
+    app: debug-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: debug-agent
+  template:
+    metadata:
+      labels:
+        app: debug-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "debug-agent"
+        dapr.io/app-port: "8003"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: debug-agent
+          image: learnflow/debug-agent:latest
+          ports:
+            - containerPort: 8003
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8003 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debug-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: debug-agent
+  ports:
+    - port: 80
+      targetPort: 8003
+---
+# === EXERCISE AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exercise-agent
+  namespace: learnflow
+  labels:
+    app: exercise-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: exercise-agent
+  template:
+    metadata:
+      labels:
+        app: exercise-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "exercise-agent"
+        dapr.io/app-port: "8004"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: exercise-agent
+          image: learnflow/exercise-agent:latest
+          ports:
+            - containerPort: 8004
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8004 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exercise-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: exercise-agent
+  ports:
+    - port: 80
+      targetPort: 8004
+---
+# === PROGRESS AGENT ===
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: progress-agent
+  namespace: learnflow
+  labels:
+    app: progress-agent
+    component: agent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: progress-agent
+  template:
+    metadata:
+      labels:
+        app: progress-agent
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "progress-agent"
+        dapr.io/app-port: "8005"
+        dapr.io/app-protocol: "http"
+    spec:
+      containers:
+        - name: progress-agent
+          image: learnflow/progress-agent:latest
+          ports:
+            - containerPort: 8005
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://learnflow:learnflow-secret-2026@postgres:5432/learnflow"
+          resources:
+            requests: { memory: "128Mi", cpu: "100m" }
+            limits: { memory: "256Mi", cpu: "500m" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8005 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: progress-agent
+  namespace: learnflow
+spec:
+  selector:
+    app: progress-agent
+  ports:
+    - port: 80
+      targetPort: 8005

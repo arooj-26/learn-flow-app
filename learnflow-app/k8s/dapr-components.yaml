@@ -1,0 +1,32 @@
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: learnflow-pubsub
+  namespace: learnflow
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "kafka:9092"
+    - name: consumerGroup
+      value: "learnflow"
+    - name: authType
+      value: "none"
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: learnflow-statestore
+  namespace: learnflow
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    - name: connectionString
+      value: "host=postgres user=learnflow password=learnflow-secret-2026 dbname=learnflow port=5432 sslmode=disable"
+    - name: tableName
+      value: "dapr_state"
+    - name: keyPrefix
+      value: "name"

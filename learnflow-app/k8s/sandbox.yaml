@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-sandbox
+  namespace: learnflow
+  labels:
+    app: code-sandbox
+    component: sandbox
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: code-sandbox
+  template:
+    metadata:
+      labels:
+        app: code-sandbox
+    spec:
+      containers:
+        - name: code-sandbox
+          image: learnflow/code-sandbox:latest
+          ports:
+            - containerPort: 8010
+          env:
+            - name: SANDBOX_TIMEOUT
+              value: "5"
+            - name: SANDBOX_MEMORY_MB
+              value: "50"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "1000m"
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          readinessProbe:
+            httpGet: { path: /health, port: 8010 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8010 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: "50Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-sandbox
+  namespace: learnflow
+spec:
+  selector:
+    app: code-sandbox
+  ports:
+    - port: 80
+      targetPort: 8010

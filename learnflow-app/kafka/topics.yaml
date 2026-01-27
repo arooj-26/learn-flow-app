@@ -1,0 +1,63 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: learning.submitted
+  labels:
+    strimzi.io/cluster: learnflow-kafka
+    app: learnflow
+    component: kafka-topic
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"   # 7 days
+    cleanup.policy: delete
+    max.message.bytes: "1048576" # 1MB
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: code.executed
+  labels:
+    strimzi.io/cluster: learnflow-kafka
+    app: learnflow
+    component: kafka-topic
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"   # 7 days
+    cleanup.policy: delete
+    max.message.bytes: "1048576"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: exercise.started
+  labels:
+    strimzi.io/cluster: learnflow-kafka
+    app: learnflow
+    component: kafka-topic
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"   # 7 days
+    cleanup.policy: delete
+    max.message.bytes: "1048576"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: struggle.detected
+  labels:
+    strimzi.io/cluster: learnflow-kafka
+    app: learnflow
+    component: kafka-topic
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "259200000"   # 3 days
+    cleanup.policy: delete
+    max.message.bytes: "1048576"
