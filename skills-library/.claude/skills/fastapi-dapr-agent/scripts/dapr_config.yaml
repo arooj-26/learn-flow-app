@@ -1,0 +1,125 @@
+# Dapr Component Configuration for LearnFlow Agents
+# State Store: PostgreSQL | Pub/Sub: Kafka
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: postgres
+  namespace: default
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    - name: connectionString
+      secretKeyRef:
+        name: postgres-secret
+        key: connection-string
+    - name: actorStateStore
+      value: "true"
+    - name: keyPrefix
+      value: "none"
+  initTimeout: 30s
+
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka
+  namespace: default
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    - name: brokers
+      value: "kafka-svc.default.svc.cluster.local:9092"
+    - name: consumerGroup
+      value: "learnflow-agents"
+    - name: authType
+      value: "none"
+    - name: maxMessageBytes
+      value: "1048576"
+    - name: consumeRetryInterval
+      value: "200ms"
+  initTimeout: 30s
+
+---
+# Scoping: restrict which apps can use which components
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: learnflow-config
+  namespace: default
+spec:
+  tracing:
+    samplingRate: "1"
+    zipkin:
+      endpointAddress: "http://zipkin.default.svc.cluster.local:9411/api/v2/spans"
+  metric:
+    enabled: true
+  accessControl:
+    defaultAction: allow
+  features:
+    - name: Resiliency
+      enabled: true
+
+---
+# Resiliency policy
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: learnflow-resiliency
+  namespace: default
+spec:
+  policies:
+    retries:
+      pubsubRetry:
+        policy: constant
+        duration: 3s
+        maxRetries: 5
+      stateRetry:
+        policy: exponential
+        maxInterval: 15s
+        maxRetries: 5
+      serviceRetry:
+        policy: constant
+        duration: 2s
+        maxRetries: 3
+    timeouts:
+      serviceTimeout: 60s
+      stateTimeout: 10s
+    circuitBreakers:
+      serviceCB:
+        maxRequests: 1
+        interval: 10s
+        timeout: 30s
+        trip: consecutiveFailures >= 5
+  targets:
+    apps:
+      triage-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+        circuitBreaker: serviceCB
+      concepts-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+      code-review-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+      debug-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+      exercise-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+      progress-agent:
+        retry: serviceRetry
+        timeout: serviceTimeout
+    components:
+      postgres:
+        outbound:
+          retry: stateRetry
+          timeout: stateTimeout
+      kafka:
+        outbound:
+          retry: pubsubRetry

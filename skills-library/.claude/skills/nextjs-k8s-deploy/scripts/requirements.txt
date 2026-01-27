@@ -1,0 +1,15 @@
+# nextjs-k8s-deploy verification dependencies
+#
+# Install: pip install -r requirements.txt
+#
+# Note: verify.py and generate_pages.py use only Python standard library
+# by default. These dependencies are optional for extended verification.
+
+# Kubernetes Python client - for advanced verification scenarios
+kubernetes==29.0.0
+
+# HTTP requests - for health check verification outside kubectl
+requests==2.31.0
+
+# YAML parsing - for Kubernetes manifest validation
+pyyaml==6.0.1

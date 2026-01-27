@@ -1,0 +1,17 @@
+# agents-md-gen dependencies
+# Note: All dependencies are Python stdlib - no external packages required
+
+# The following are built-in modules used:
+# - pathlib (stdlib)
+# - json (stdlib)
+# - os (stdlib)
+# - sys (stdlib)
+# - shutil (stdlib)
+# - argparse (stdlib)
+# - re (stdlib)
+# - signal (stdlib)
+# - time (stdlib)
+# - datetime (stdlib)
+# - typing (stdlib)
+
+# No pip install required - scripts use only Python standard library

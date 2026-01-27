@@ -1,0 +1,22 @@
+# postgres-k8s-setup Python dependencies
+#
+# Install with: pip install -r requirements.txt
+
+# PostgreSQL adapter (required for all database operations)
+psycopg2-binary==2.9.9
+
+# Kubernetes client (for pod status checks)
+kubernetes==29.0.0
+
+# SQLAlchemy (optional, for ORM-based operations)
+sqlalchemy==2.0.23
+
+# Additional dependencies pulled in by the above:
+# - urllib3
+# - certifi
+# - python-dateutil
+# - requests
+# - oauthlib
+# - websocket-client
+# - pyyaml
+# - google-auth
