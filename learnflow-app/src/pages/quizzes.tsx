@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import QuizPanel from '@/components/QuizPanel';
-import { ClipboardList } from 'lucide-react';
-
-const DEMO_STUDENT_ID = '00000000-0000-0000-0000-000000000001';
+import { ClipboardList, Loader2 } from 'lucide-react';
+import { useRequireAuth } from '@/components/withAuth';
 
 const MODULES = [
   { key: 'basics', label: 'Basics' },
@@ -14,8 +13,17 @@ const MODULES = [
 ];
 
 export default function QuizzesPage() {
+  const { user, isReady } = useRequireAuth();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, { score: number; total: number }>>({});
+
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
 
   return (
     <Layout>
@@ -61,7 +69,6 @@ export default function QuizzesPage() {
             </button>
             <QuizPanel
               module={selectedModule}
-              studentId={DEMO_STUDENT_ID}
               onComplete={(score, total) => {
                 setScores((prev) => ({ ...prev, [selectedModule]: { score, total } }));
               }}

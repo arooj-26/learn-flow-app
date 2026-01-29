@@ -2,13 +2,23 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import CodeEditor from '@/components/CodeEditor';
 import ChatPanel from '@/components/ChatPanel';
+import { useRequireAuth } from '@/components/withAuth';
+import { Loader2 } from 'lucide-react';
 
-const DEMO_STUDENT_ID = '00000000-0000-0000-0000-000000000001';
 const DEMO_TOPIC_ID = '00000000-0000-0000-0000-000000000010';
 
 export default function EditorPage() {
+  const { user, isReady } = useRequireAuth();
   const [lastCode, setLastCode] = useState('');
   const [executionCount, setExecutionCount] = useState(0);
+
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
 
   return (
     <Layout>
@@ -22,7 +32,6 @@ export default function EditorPage() {
           {/* Editor - 2 cols */}
           <div className="col-span-2">
             <CodeEditor
-              studentId={DEMO_STUDENT_ID}
               topicId={DEMO_TOPIC_ID}
               onExecutionResult={(result) => {
                 setExecutionCount((c) => c + 1);
@@ -33,7 +42,6 @@ export default function EditorPage() {
           {/* Chat - 1 col */}
           <div className="col-span-1">
             <ChatPanel
-              studentId={DEMO_STUDENT_ID}
               topicId={DEMO_TOPIC_ID}
               code={lastCode}
             />

@@ -3,16 +3,18 @@ import dynamic from 'next/dynamic';
 import { Play, Lightbulb, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { gradeExercise, executeCode } from '@/utils/api';
 import type { Exercise } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 interface ExercisePanelProps {
   exercise: Exercise;
-  studentId: string;
   onComplete?: (passed: boolean, score: number) => void;
 }
 
-export default function ExercisePanel({ exercise, studentId, onComplete }: ExercisePanelProps) {
+export default function ExercisePanel({ exercise, onComplete }: ExercisePanelProps) {
+  const { user } = useAuth();
+  const studentId = user?.id || '';
   const [code, setCode] = useState(exercise.starter_code);
   const [output, setOutput] = useState('');
   const [hintsShown, setHintsShown] = useState(0);

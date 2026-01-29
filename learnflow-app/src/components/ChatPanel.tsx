@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User as UserIcon, Loader2 } from 'lucide-react';
 import { sendChatMessage } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -11,12 +12,13 @@ interface Message {
 }
 
 interface ChatPanelProps {
-  studentId: string;
   topicId?: string;
   code?: string;
 }
 
-export default function ChatPanel({ studentId, topicId, code }: ChatPanelProps) {
+export default function ChatPanel({ topicId, code }: ChatPanelProps) {
+  const { user } = useAuth();
+  const studentId = user?.id || '';
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -119,7 +121,7 @@ export default function ChatPanel({ studentId, topicId, code }: ChatPanelProps) 
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
               msg.role === 'user' ? 'bg-blue-600' : 'bg-slate-600'
             }`}>
-              {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
+              {msg.role === 'user' ? <UserIcon size={14} /> : <Bot size={14} />}
             </div>
             <div className={`max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
               {msg.role === 'assistant' && msg.agent && (

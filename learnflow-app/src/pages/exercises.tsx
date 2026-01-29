@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import ExercisePanel from '@/components/ExercisePanel';
-import { BookOpen, ChevronRight } from 'lucide-react';
+import { BookOpen, ChevronRight, Loader2 } from 'lucide-react';
 import type { Exercise } from '@/utils/api';
-
-const DEMO_STUDENT_ID = '00000000-0000-0000-0000-000000000001';
+import { useRequireAuth } from '@/components/withAuth';
 
 // Demo exercises - in production, fetched from exercise-agent
 const DEMO_EXERCISES: Record<string, Exercise[]> = {
@@ -53,8 +52,17 @@ const TOPICS = [
 ];
 
 export default function ExercisesPage() {
+  const { user, isReady } = useRequireAuth();
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
 
   return (
     <Layout>
@@ -100,10 +108,9 @@ export default function ExercisesPage() {
                 <ExercisePanel
                   key={exercise.exercise_id}
                   exercise={exercise}
-                  studentId={DEMO_STUDENT_ID}
                   onComplete={(passed, score) => {
                     if (passed) {
-                      setCompletedExercises((prev) => new Set([...prev, exercise.exercise_id]));
+                      setCompletedExercises((prev) => new Set([...Array.from(prev), exercise.exercise_id]));
                     }
                   }}
                 />

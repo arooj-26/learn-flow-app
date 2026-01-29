@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import Layout from '@/components/Layout';
 import ModuleCard from '@/components/ModuleCard';
 import MasteryBadge from '@/components/MasteryBadge';
 import ProgressCard from '@/components/ProgressCard';
-import { BarChart3, TrendingUp, BookOpen, Flame } from 'lucide-react';
+import { BarChart3, TrendingUp, BookOpen, Flame, Loader2 } from 'lucide-react';
+import { useRequireAuth } from '@/components/withAuth';
 
 // Demo data - in production, fetched from progress-agent
 const MODULES = [
@@ -25,16 +25,25 @@ const RECENT_TOPICS = [
 ];
 
 export default function Dashboard() {
+  const { user, isReady } = useRequireAuth();
   const overallMastery = Math.round(MODULES.reduce((sum, m) => sum + m.mastery, 0) / MODULES.length);
   const totalExercises = MODULES.reduce((sum, m) => sum + m.exercisesDone, 0);
   const currentStreak = 5; // demo
+
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
 
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Student Dashboard</h1>
+          <h1 className="text-2xl font-bold text-white">Welcome, {user.name}!</h1>
           <p className="text-slate-400 mt-1">Track your Python learning progress</p>
         </div>
 

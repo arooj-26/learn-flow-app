@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, ArrowRight, Trophy } from 'lucide-react';
 import type { QuizQuestion } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Sample quiz data per module
 const SAMPLE_QUIZZES: Record<string, QuizQuestion[]> = {
@@ -31,11 +32,13 @@ const SAMPLE_QUIZZES: Record<string, QuizQuestion[]> = {
 
 interface QuizPanelProps {
   module?: string;
-  studentId: string;
   onComplete?: (score: number, total: number) => void;
 }
 
-export default function QuizPanel({ module = 'basics', studentId, onComplete }: QuizPanelProps) {
+export default function QuizPanel({ module = 'basics', onComplete }: QuizPanelProps) {
+  const { user } = useAuth();
+  // studentId available for future API calls if needed
+  const studentId = user?.id || '';
   const questions = SAMPLE_QUIZZES[module] || SAMPLE_QUIZZES.basics;
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});

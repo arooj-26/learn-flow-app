@@ -2,17 +2,19 @@ import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Play, RotateCcw, Search, Loader2 } from 'lucide-react';
 import { executeCode, reviewCode, debugCode } from '@/utils/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 interface CodeEditorProps {
   initialCode?: string;
-  studentId: string;
   topicId?: string;
   onExecutionResult?: (result: { stdout: string; stderr: string; success: boolean }) => void;
 }
 
-export default function CodeEditor({ initialCode = '# Write your Python code here\nprint("Hello, LearnFlow!")\n', studentId, topicId, onExecutionResult }: CodeEditorProps) {
+export default function CodeEditor({ initialCode = '# Write your Python code here\nprint("Hello, LearnFlow!")\n', topicId, onExecutionResult }: CodeEditorProps) {
+  const { user } = useAuth();
+  const studentId = user?.id || '';
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);

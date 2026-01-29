@@ -1,13 +1,56 @@
 /** API client for LearnFlow backend services. */
 
-const API_BASE = process.env.API_BASE_URL || 'http://localhost:8000';
-const SANDBOX_URL = process.env.SANDBOX_URL || 'http://localhost:8010';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+const SANDBOX_URL = process.env.NEXT_PUBLIC_SANDBOX_URL || 'http://localhost:8010';
+
+// Auth token management
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('learnflow_token', token);
+    } else {
+      localStorage.removeItem('learnflow_token');
+    }
+  }
+}
+
+export function getAuthToken(): string | null {
+  if (authToken) return authToken;
+  if (typeof window !== 'undefined') {
+    authToken = localStorage.getItem('learnflow_token');
+  }
+  return authToken;
+}
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  };
+
+  // Add Authorization header if token exists
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers,
     ...options,
   });
+
+  // Handle 401 Unauthorized - clear token and redirect to login
+  if (res.status === 401) {
+    setAuthToken(null);
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    throw new Error('Session expired. Please log in again.');
+  }
+
   if (!res.ok) {
     const error = await res.text().catch(() => res.statusText);
     throw new Error(`API Error ${res.status}: ${error}`);

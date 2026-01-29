@@ -2,7 +2,8 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import TeacherStudentRow from '@/components/TeacherStudentRow';
 import MasteryBadge from '@/components/MasteryBadge';
-import { GraduationCap, AlertTriangle, Users, TrendingDown, Plus } from 'lucide-react';
+import { GraduationCap, AlertTriangle, Users, TrendingDown, Plus, Loader2 } from 'lucide-react';
+import { useRequireAuth } from '@/components/withAuth';
 
 // Demo data - in production, fetched from progress-agent + DB
 const CLASS_DATA = {
@@ -31,14 +32,25 @@ const MODULE_STATS = [
 ];
 
 export default function TeacherDashboard() {
+  // Require teacher role - redirects to dashboard if not a teacher
+  const { user, isReady } = useRequireAuth({ requiredRole: 'teacher' });
+
   const [tab, setTab] = useState<'overview' | 'students' | 'struggles' | 'create'>('overview');
   const [newExercise, setNewExercise] = useState({ title: '', description: '', topic: 'basics', difficulty: 'medium', starterCode: '' });
 
   const classMastery = Math.round(CLASS_DATA.students.reduce((s, st) => s + st.overall_mastery, 0) / CLASS_DATA.students.length);
   const strugglingStudents = CLASS_DATA.students.filter((s) => s.struggling_topics.length > 0);
 
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
+
   return (
-    <Layout role="teacher">
+    <Layout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">

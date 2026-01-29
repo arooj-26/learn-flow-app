@@ -1,9 +1,19 @@
 import Layout from '@/components/Layout';
 import ChatPanel from '@/components/ChatPanel';
-
-const DEMO_STUDENT_ID = '00000000-0000-0000-0000-000000000001';
+import { useRequireAuth } from '@/components/withAuth';
+import { Loader2 } from 'lucide-react';
 
 export default function ChatPage() {
+  const { user, isReady } = useRequireAuth();
+
+  if (!isReady || !user) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-400" size={32} />
+      </div>
+    );
+  }
+
   return (
     <Layout>
       <div className="max-w-3xl mx-auto h-[calc(100vh-120px)]">
@@ -14,7 +24,7 @@ export default function ChatPage() {
           </p>
         </div>
         <div className="h-[calc(100%-80px)]">
-          <ChatPanel studentId={DEMO_STUDENT_ID} />
+          <ChatPanel />
         </div>
       </div>
     </Layout>
