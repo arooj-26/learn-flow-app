@@ -84,7 +84,12 @@ export async function localSignIn(email: string, password: string): Promise<{ us
   const emailLower = email.toLowerCase().trim();
   const user = users.find(u => u.email === emailLower);
 
-  if (!user) return { error: 'Invalid email or password' };
+  if (!user) {
+    // Account not in this browser — could be a new device or cleared storage.
+    // Auto-create the account so the user isn't permanently locked out.
+    const name = emailLower.split('@')[0];
+    return localSignUp(name, email, password);
+  }
 
   const passwordHash = await sha256(password + emailLower);
   if (user.passwordHash !== passwordHash) return { error: 'Invalid email or password' };

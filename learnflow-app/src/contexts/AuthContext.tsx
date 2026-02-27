@@ -30,18 +30,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadSession = () => {
-    const session = getStoredSession();
-    if (session) {
+  const loadSession = async () => {
+    // 1. Try localStorage first (fastest path)
+    const localSession = getStoredSession();
+    if (localSession) {
       setUser({
-        id: session.id,
-        name: session.name,
-        email: session.email,
-        role: session.role === 'teacher' ? 'teacher' : 'student',
+        id: localSession.id,
+        name: localSession.name,
+        email: localSession.email,
+        role: localSession.role === 'teacher' ? 'teacher' : 'student',
       });
-    } else {
-      setUser(null);
+      setIsLoading(false);
+      // Re-sync server cookie in case it was lost between browser sessions
+      fetch('/api/auth/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(localSession),
+      }).catch(() => {});
+      return;
     }
+
+    // 2. No localStorage — check if a valid server cookie still exists
+    try {
+      const res = await fetch('/api/auth/session', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.user?.id) {
+          const u = data.user;
+          // Restore into localStorage so future loads are instant
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('lf_session', JSON.stringify(u));
+          }
+          setUser({ id: u.id, name: u.name, email: u.email, role: u.role === 'teacher' ? 'teacher' : 'student' });
+          setIsLoading(false);
+          return;
+        }
+      }
+    } catch { /* no server session */ }
+
+    setUser(null);
     setIsLoading(false);
   };
 
@@ -60,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshSession = async () => {
-    loadSession();
+    await loadSession();
   };
 
   return (
