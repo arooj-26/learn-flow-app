@@ -23,6 +23,45 @@ const MODULE_ICONS: Record<string, string> = {
   'Libraries & Modules': '📚',
 };
 
+// Static fallback when no database is available
+function getStaticProgress() {
+  const moduleNames = [
+    { id: 1, name: 'Python Basics', description: 'Learn Python fundamentals: variables, strings, numbers, and I/O' },
+    { id: 2, name: 'Control Flow', description: 'Master conditionals and loops to control program flow' },
+    { id: 3, name: 'Data Structures', description: 'Work with lists, tuples, dictionaries, and sets' },
+    { id: 4, name: 'Functions', description: 'Write reusable, modular code with functions' },
+    { id: 5, name: 'Object-Oriented Programming', description: 'Build complex programs using classes and objects' },
+    { id: 6, name: 'File Handling', description: 'Read, write, and manage files in Python' },
+    { id: 7, name: 'Error Handling', description: 'Handle exceptions and write robust Python code' },
+    { id: 8, name: 'Libraries & Modules', description: "Use Python's standard library and third-party packages" },
+  ];
+
+  const modules = moduleNames.map(m => ({
+    id: String(m.id),
+    name: m.name,
+    description: m.description,
+    icon: MODULE_ICONS[m.name] || '📚',
+    mastery: 0,
+    topicsCount: 8,
+    exercisesDone: 0,
+    quizzesDone: 0,
+    quizzesTotal: 8,
+    bestQuizScore: 0,
+  }));
+
+  return {
+    modules,
+    recentTopics: [],
+    stats: {
+      overallMastery: 0,
+      totalExercises: 0,
+      currentStreak: 0,
+      modulesStarted: 0,
+      totalModules: 8,
+    },
+  };
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const session = await auth.api.getSession({ headers: req.headers as any });
@@ -31,13 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = session.user.id;
 
     if (req.method === 'GET') {
-      // Return empty progress when no DB is available
       if (!process.env.DATABASE_URL) {
-        return res.status(200).json({
-          modules: [],
-          recentTopics: [],
-          stats: { overallMastery: 0, totalExercises: 0, currentStreak: 0, modulesStarted: 0, totalModules: 8 },
-        });
+        return res.status(200).json(getStaticProgress());
       }
       return await getProgress(userId, res);
     } else if (req.method === 'POST') {
