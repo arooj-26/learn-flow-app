@@ -31,17 +31,8 @@ export const auth = betterAuth({
     },
   },
 
-  // User configuration with role field
+  // User configuration
   user: {
-    additionalFields: {
-      role: {
-        type: 'string',
-        required: false,
-        defaultValue: 'student',
-        input: true, // Allow setting during signup via teacher code validation
-      },
-    },
-    // Map to existing users table
     modelName: 'user',
   },
 
@@ -61,11 +52,18 @@ export const auth = betterAuth({
   // Secret for signing tokens
   secret: process.env.BETTER_AUTH_SECRET,
 
-  // Trust host header in production
+  // Trust host header in production - support multiple ports
   trustedOrigins: [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'http://127.0.0.1:3002',
+    'http://127.0.0.1:3003',
     process.env.NEXT_PUBLIC_APP_URL || '',
+    process.env.NEXT_PUBLIC_APP_URL_ALT || '',
   ].filter(Boolean),
 });
 

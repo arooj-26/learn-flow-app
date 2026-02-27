@@ -1,0 +1,27 @@
+# kafka-k8s-setup Python dependencies
+#
+# Install with: pip install -r requirements.txt
+
+# Confluent Kafka client (recommended for production)
+confluent-kafka==2.3.0
+
+# Kubernetes client (for pod status checks)
+kubernetes==29.0.0
+
+# Alternative: kafka-python (pure Python, simpler but less performant)
+# kafka-python==2.0.2
+
+# Additional dependencies pulled in by the above:
+# - librdkafka (native library for confluent-kafka)
+# - urllib3
+# - certifi
+# - python-dateutil
+# - requests
+# - oauthlib
+# - websocket-client
+# - pyyaml
+# - google-auth
+
+# Note: The scripts in this skill primarily use kubectl exec
+# to interact with Kafka. These Python libraries are for
+# application-level Kafka integration, not for the setup scripts.

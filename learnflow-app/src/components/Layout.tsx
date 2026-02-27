@@ -1,14 +1,22 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { BookOpen, Code, MessageSquare, ClipboardList, BarChart3, GraduationCap, LogOut, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  BookOpen, Code, MessageSquare, ClipboardList, BarChart3, GraduationCap,
+  LogOut, User, ChevronDown, ChevronRight, Target
+} from 'lucide-react';
 import { ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+
+interface Module {
+  id: string;
+  name: string;
+}
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/editor', label: 'Code Editor', icon: Code },
   { href: '/chat', label: 'Chat Tutor', icon: MessageSquare },
-  { href: '/quizzes', label: 'Quizzes', icon: ClipboardList },
   { href: '/exercises', label: 'Exercises', icon: BookOpen },
 ];
 
@@ -23,14 +31,51 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const { user, isLoading, signOut } = useAuth();
+  const [quizExpanded, setQuizExpanded] = useState(false);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [userRole, setUserRole] = useState<'student' | 'teacher'>('student');
 
-  // Get role from auth context, default to student
-  const role = user?.role || 'student';
-  const navItems = role === 'teacher' ? [...NAV_ITEMS, ...TEACHER_NAV] : NAV_ITEMS;
+  // Fetch user role from our users table
+  useEffect(() => {
+    if (user) {
+      fetchUserRole();
+      fetchModules();
+    }
+  }, [user]);
+
+  const fetchUserRole = async () => {
+    try {
+      const response = await fetch('/api/user/me', { credentials: 'include' });
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role || 'student');
+      }
+    } catch (error) {
+      console.error('Failed to fetch user role:', error);
+    }
+  };
+
+  const navItems = userRole === 'teacher' ? [...NAV_ITEMS, ...TEACHER_NAV] : NAV_ITEMS;
+
+  const fetchModules = async () => {
+    try {
+      const response = await fetch('/api/modules', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setModules(data.modules || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch modules:', error);
+    }
+  };
 
   const handleSignOut = async () => {
     await signOut();
   };
+
+  const isQuizActive = router.pathname.startsWith('/quizzes');
 
   return (
     <div className="flex h-screen bg-slate-900">
@@ -44,7 +89,7 @@ export default function Layout({ children }: LayoutProps) {
           <p className="text-xs text-slate-400 mt-1">Python Learning Platform</p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ href, label, icon: Icon }) => {
             const active = router.pathname === href;
             return (
@@ -62,6 +107,55 @@ export default function Layout({ children }: LayoutProps) {
               </Link>
             );
           })}
+
+          {/* Quizzes Section with expandable modules */}
+          <div className="pt-2">
+            <button
+              onClick={() => setQuizExpanded(!quizExpanded)}
+              className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isQuizActive
+                  ? 'bg-purple-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Target size={18} />
+                Quizzes
+              </div>
+              {quizExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+
+            {/* Expandable module list */}
+            {quizExpanded && (
+              <div className="mt-1 ml-4 space-y-0.5">
+                <Link
+                  href="/quizzes"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors ${
+                    router.pathname === '/quizzes' && !router.query.moduleId
+                      ? 'bg-purple-500/30 text-purple-300'
+                      : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  <ClipboardList size={14} />
+                  All Quizzes
+                </Link>
+                {modules.map((mod) => (
+                  <Link
+                    key={mod.id}
+                    href={`/quizzes?moduleId=${mod.id}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors ${
+                      router.query.moduleId === mod.id
+                        ? 'bg-purple-500/30 text-purple-300'
+                        : 'text-slate-400 hover:bg-slate-700 hover:text-white'
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                    {mod.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* User info and logout */}
@@ -95,11 +189,11 @@ export default function Layout({ children }: LayoutProps) {
               {/* Role badge */}
               <div className="flex items-center justify-between">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                  role === 'teacher'
+                  userRole === 'teacher'
                     ? 'bg-purple-900/30 text-purple-300 border border-purple-700'
                     : 'bg-blue-900/30 text-blue-300 border border-blue-700'
                 }`}>
-                  {role === 'teacher' ? 'Teacher' : 'Student'}
+                  {userRole === 'teacher' ? 'Teacher' : 'Student'}
                 </span>
 
                 {/* Logout button */}

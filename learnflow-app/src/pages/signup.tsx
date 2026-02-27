@@ -51,21 +51,33 @@ export default function SignupPage() {
     }
 
     try {
-      // Determine role based on teacher code
-      const isTeacher = teacherCode && teacherCode === (process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE || 'learnflow-teacher-2026');
-      const role = isTeacher ? 'teacher' : 'student';
-
       const result = await authClient.signUp.email({
         email,
         password,
         name,
-        // Pass role as additional data
-        role,
-      } as { email: string; password: string; name: string; role: string });
+      });
 
       if (result.error) {
         setError(result.error.message || 'Failed to create account');
         return;
+      }
+
+      // If teacher code provided, set the role
+      if (teacherCode) {
+        try {
+          const roleResponse = await fetch('/api/user/set-role', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ teacherCode }),
+          });
+
+          if (!roleResponse.ok) {
+            console.warn('Failed to set teacher role, continuing as student');
+          }
+        } catch (roleErr) {
+          console.warn('Error setting role:', roleErr);
+        }
       }
 
       // Redirect to dashboard on success
