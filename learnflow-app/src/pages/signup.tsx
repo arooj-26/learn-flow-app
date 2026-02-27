@@ -1,13 +1,13 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { GraduationCap, Mail, Lock, User, Key, Loader2, Github } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+import { GraduationCap, Mail, Lock, User, Key, Loader2 } from 'lucide-react';
+import { authClient, updateLocalRole } from '@/lib/auth-client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, refreshSession } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -17,18 +17,18 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Redirect if already authenticated
-  if (authLoading) {
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  if (authLoading || isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <Loader2 className="animate-spin text-blue-400" size={32} />
       </div>
     );
-  }
-
-  if (isAuthenticated) {
-    router.push('/dashboard');
-    return null;
   }
 
   const handleEmailSignup = async (e: FormEvent) => {
@@ -51,62 +51,30 @@ export default function SignupPage() {
     }
 
     try {
-      const result = await authClient.signUp.email({
-        email,
-        password,
-        name,
-      });
+      const result = await authClient.signUp.email({ email, password, name });
 
       if (result.error) {
         setError(result.error.message || 'Failed to create account');
         return;
       }
 
-      // If teacher code provided, set the role
-      if (teacherCode) {
-        try {
-          const roleResponse = await fetch('/api/user/set-role', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ teacherCode }),
-          });
-
-          if (!roleResponse.ok) {
-            console.warn('Failed to set teacher role, continuing as student');
-          }
-        } catch (roleErr) {
-          console.warn('Error setting role:', roleErr);
-        }
+      // If teacher code provided, update role locally
+      const validTeacherCode = process.env.NEXT_PUBLIC_TEACHER_ACCESS_CODE || 'learnflow-teacher-2026';
+      if (teacherCode && teacherCode === validTeacherCode && result.data?.user) {
+        updateLocalRole(result.data.user.id, 'teacher');
       }
 
-      // Redirect to dashboard on success
+      await refreshSession();
       router.push('/dashboard');
-    } catch (err) {
-      setError('An error occurred during signup');
+    } catch {
+      setError('An error occurred during signup. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSocialSignup = async (provider: 'google' | 'github') => {
-    setIsLoading(true);
-    setError('');
-
-    try {
-      // Store teacher code in sessionStorage for the callback to use
-      if (teacherCode) {
-        sessionStorage.setItem('pendingTeacherCode', teacherCode);
-      }
-
-      await authClient.signIn.social({
-        provider,
-        callbackURL: '/dashboard',
-      });
-    } catch (err) {
-      setError(`Failed to sign up with ${provider}`);
-      setIsLoading(false);
-    }
+  const handleSocialSignup = (provider: 'google' | 'github') => {
+    setError(`${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-up is not configured. Please use email and password.`);
   };
 
   return (
@@ -152,7 +120,7 @@ export default function SignupPage() {
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition disabled:opacity-50"
             >
-              <Github size={20} />
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
               Sign up with GitHub
             </button>
           </div>
