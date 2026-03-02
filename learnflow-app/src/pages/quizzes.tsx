@@ -96,7 +96,7 @@ export default function QuizzesPage() {
         {!selectedTopic ? (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
               <div className="bg-slate-800 rounded-xl border border-slate-700 p-4">
                 <div className="text-3xl font-bold text-purple-400">
                   {modules.reduce((acc, m) => acc + (m.topics?.length || 0), 0) * 8}
@@ -144,7 +144,7 @@ export default function QuizzesPage() {
                       )}
                     </h2>
                   </div>
-                  <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {module.topics?.map((topic) => (
                       <button
                         key={topic.id}

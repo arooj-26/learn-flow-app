@@ -201,7 +201,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
             <StatCard icon={<Users className="text-blue-400" />} label="Total Students" value={teacherData.stats.totalStudents.toString()} />
             <StatCard icon={<BarChart3 className="text-green-400" />} label="Average Mastery" value={`${teacherData.stats.avgMastery}%`} />
             <StatCard icon={<Activity className="text-orange-400" />} label="Active Today" value={teacherData.stats.activeToday.toString()} />
@@ -306,7 +306,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <StatCard icon={<BarChart3 className="text-blue-400" />} label="Overall Mastery" value={`${stats.overallMastery}%`} />
           <StatCard icon={<BookOpen className="text-green-400" />} label="Exercises Done" value={stats.totalExercises.toString()} />
           <StatCard icon={<Flame className="text-orange-400" />} label="Current Streak" value={`${stats.currentStreak} days`} />
@@ -314,9 +314,9 @@ export default function Dashboard() {
         </div>
 
         {/* Overall mastery ring */}
-        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 mb-8 flex items-center gap-8">
+        <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-8">
           <MasteryBadge mastery={stats.overallMastery} size="lg" />
-          <div>
+          <div className="text-center sm:text-left">
             <h2 className="text-lg font-semibold text-white">Overall Progress</h2>
             <p className="text-sm text-slate-400 mt-1">
               {stats.overallMastery >= 71 ? "Great progress! Keep it up!" :
@@ -324,7 +324,7 @@ export default function Dashboard() {
                stats.overallMastery > 0 ? "Keep practicing! Every exercise helps." :
                "Start learning! Complete exercises to track your progress."}
             </p>
-            <div className="mt-3 flex gap-4 text-xs">
+            <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-1 text-xs">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> Beginner (0-40%)</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" /> Learning (41-70%)</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Proficient (71-90%)</span>
@@ -335,7 +335,7 @@ export default function Dashboard() {
 
         {/* Modules grid */}
         <h2 className="text-lg font-semibold text-white mb-4">Python Modules</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           {modules.map((mod) => (
             <ModuleCard
               key={mod.id}
@@ -355,7 +355,7 @@ export default function Dashboard() {
         {/* Recent topic progress */}
         <h2 className="text-lg font-semibold text-white mb-4">Recent Topic Activity</h2>
         {recentTopics.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {recentTopics.map((topic) => (
               <ProgressCard key={topic.topic_id} topic={topic} />
             ))}

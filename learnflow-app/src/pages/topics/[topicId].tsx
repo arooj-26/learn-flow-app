@@ -172,25 +172,25 @@ export default function TopicPage() {
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">{topicData.name}</h1>
-            <p className="text-slate-400">{topicData.description}</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">{topicData.name}</h1>
+            <p className="text-slate-400 text-sm">{topicData.description}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-slate-800 px-4 py-2 rounded-lg">
-              <span className="text-slate-400 text-sm">Mastery:</span>
-              <span className="text-white font-semibold ml-2">{topicData.mastery}%</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="bg-slate-800 px-3 py-1.5 rounded-lg">
+              <span className="text-slate-400 text-xs">Mastery:</span>
+              <span className="text-white font-semibold ml-1 text-sm">{topicData.mastery}%</span>
             </div>
-            <div className="bg-slate-800 px-4 py-2 rounded-lg">
-              <span className="text-slate-400 text-sm">Exercises:</span>
-              <span className="text-white font-semibold ml-2">{topicData.exercises_done}/6</span>
+            <div className="bg-slate-800 px-3 py-1.5 rounded-lg">
+              <span className="text-slate-400 text-xs">Exercises:</span>
+              <span className="text-white font-semibold ml-1 text-sm">{topicData.exercises_done}/6</span>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setActiveTab('content')}
             className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
@@ -233,7 +233,7 @@ export default function TopicPage() {
               className="prose prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: topicData.content }}
             />
-            <div className="mt-8 flex justify-between">
+            <div className="mt-8 flex flex-col sm:flex-row justify-between gap-3">
               <button
                 onClick={() => setActiveTab('quiz')}
                 className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium flex items-center gap-2"
@@ -259,9 +259,9 @@ export default function TopicPage() {
 
         {/* Exercises Tab */}
         {activeTab === 'exercises' && (
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Exercise list */}
-            <div className="col-span-1 space-y-2">
+            <div className="lg:col-span-1 space-y-2">
               <h3 className="text-sm font-medium text-slate-400 mb-3">Exercises</h3>
               {topicData.exercises.map((exercise, index) => (
                 <button
@@ -306,7 +306,7 @@ export default function TopicPage() {
             </div>
 
             {/* Code editor */}
-            <div className="col-span-3">
+            <div className="lg:col-span-3">
               {selectedExercise && (
                 <div className="space-y-4">
                   {/* Exercise description */}
@@ -331,7 +331,7 @@ export default function TopicPage() {
 
                   {/* Editor */}
                   <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-                    <div className="h-64">
+                    <div className="h-48 sm:h-64 md:h-80">
                       <MonacoEditor
                         height="100%"
                         language="python"

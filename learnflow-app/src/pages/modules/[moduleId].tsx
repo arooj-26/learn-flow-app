@@ -130,30 +130,30 @@ export default function ModulePage() {
               href={`/topics/${topic.id}`}
               className="block bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 rounded-xl p-4 transition-all"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-medium text-white">
+              <div className="flex items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
                     {index + 1}
                   </div>
-                  <div>
-                    <h3 className="font-medium text-white">{topic.name}</h3>
-                    <p className="text-sm text-slate-400">{topic.description}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-white truncate">{topic.name}</h3>
+                    <p className="text-sm text-slate-400 line-clamp-1">{topic.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm">
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="hidden sm:block text-right">
+                    <div className="flex items-center gap-1 text-sm justify-end">
                       <BookOpen size={14} className="text-slate-400" />
-                      <span className="text-slate-400">{topic.exercises_done}/{topic.total_exercises} exercises</span>
+                      <span className="text-slate-400">{topic.exercises_done}/{topic.total_exercises}</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1 mt-1 justify-end">
                       {topic.mastery >= 70 ? (
                         <CheckCircle size={14} className="text-green-400" />
                       ) : (
                         <Circle size={14} className="text-slate-500" />
                       )}
                       <span className={topic.mastery >= 70 ? 'text-green-400 text-sm' : 'text-slate-500 text-sm'}>
-                        {topic.mastery}% mastery
+                        {topic.mastery}%
                       </span>
                     </div>
                   </div>

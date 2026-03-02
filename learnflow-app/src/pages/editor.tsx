@@ -28,9 +28,9 @@ export default function EditorPage() {
           <p className="text-slate-400 mt-1">Write, run, and get feedback on your Python code</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 h-[calc(100vh-180px)]">
-          {/* Editor - 2 cols */}
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ minHeight: 'calc(100vh - 200px)' }}>
+          {/* Editor - full width on mobile, 2/3 on desktop */}
+          <div className="lg:col-span-2 min-h-[360px]">
             <CodeEditor
               topicId={DEMO_TOPIC_ID}
               onExecutionResult={(result) => {
@@ -39,8 +39,8 @@ export default function EditorPage() {
             />
           </div>
 
-          {/* Chat - 1 col */}
-          <div className="col-span-1">
+          {/* Chat - full width on mobile, 1/3 on desktop */}
+          <div className="lg:col-span-1 min-h-[320px]">
             <ChatPanel
               topicId={DEMO_TOPIC_ID}
               code={lastCode}
